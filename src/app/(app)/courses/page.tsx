@@ -38,7 +38,7 @@ export default function CoursesPage() {
     if (!uid) return;
     setEnrolling(courseId);
     const supabase = createClient();
-    const { error } = await supabase.from("enrollments").upsert({ user_id: uid, course_id: courseId });
+    const { error } = await supabase.from("enrollments").upsert({ user_id: uid, course_id: courseId } as any);const { error } = await supabase.from("enrollments").upsert({ user_id: uid, course_id: courseId });
     if (error) { showToast("Failed to enroll: " + error.message); }
     else {
       setCourses((prev) => prev.map((c) => c.id === courseId ? { ...c, enrolled: true, status: "progress", progress: 0 } : c));
