@@ -23,7 +23,7 @@ export default function DashboardPage() {
         supabase.from("quiz_attempts").select("pct").eq("user_id", uid),
         supabase.from("activity").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(6),
         supabase.from("courses").select("*").eq("published", true),
-      ]);
+      ]) as any;
 
       setUser(profile);
       setActivity(act ?? []);
