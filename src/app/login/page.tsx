@@ -2,10 +2,10 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
   const [tab, setTab]           = useState<"login"|"signup">("login");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -21,27 +21,26 @@ function LoginForm() {
   };
 
   const handleSubmit = async () => {
-    console.log("1. handleSubmit called");
-    console.log("2. email:", email, "password length:", password.length);
     setError(""); setSuccess("");
     if (!email || !password) { setError("Please fill in all fields."); return; }
     if (tab === "signup" && !name.trim()) { setError("Please enter your name."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     setLoading(true);
     try {
-      console.log("3. creating supabase client");
       const supabase = createClient();
-      console.log("4. calling signInWithPassword");
-      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
-      console.log("5. result:", { data, err });
-      if (err) throw err;
-      console.log("6. session:", data.session?.user?.id);
-      if (data.session) {
-        console.log("7. redirecting to: /dashboard", );
-        window.location.href = "/dashboard";
+      if (tab === "signup") {
+        const { error: err } = await supabase.auth.signUp({
+          email, password, options: { data: { name } },
+        });
+        if (err) throw err;
+        setSuccess("Account created! Check your email to confirm, then sign in.");
+        setTab("login");
+      } else {
+        const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
+        if (err) throw err;
+        if (data.session) window.location.href = "/dashboard";
       }
     } catch (err: any) {
-      console.log("8. ERROR:", err);
       setError(err.message || "Something went wrong.");
     } finally { setLoading(false); }
   };
@@ -50,7 +49,7 @@ function LoginForm() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${location.origin}/auth/callback` },
+      options: { redirectTo: `${getBaseUrl()}/auth/callback` },
     });
   };
 
@@ -65,7 +64,6 @@ function LoginForm() {
         </div>
 
         <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: "20px", padding: "32px" }}>
-          {/* Tabs */}
           <div style={{ display: "flex", background: "var(--bg3)", borderRadius: "10px", padding: "3px", marginBottom: "24px" }}>
             {(["login","signup"] as const).map((t) => (
               <button key={t} type="button" onClick={() => { setTab(t); setError(""); setSuccess(""); }}
@@ -75,11 +73,9 @@ function LoginForm() {
             ))}
           </div>
 
-          {/* Alerts */}
           {error && <div style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "var(--red)" }}>{error}</div>}
           {success && <div style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "var(--green)" }}>{success}</div>}
 
-          {/* Fields */}
           {tab === "signup" && (
             <div style={{ marginBottom: "16px" }}>
               <label style={{ fontSize: "12.5px", color: "var(--muted)", marginBottom: "7px", fontWeight: 500, display: "block" }}>Full name</label>
@@ -102,7 +98,6 @@ function LoginForm() {
             </div>
           )}
 
-          {/* Submit */}
           <button type="button" onClick={handleSubmit} disabled={loading}
             style={{ width: "100%", padding: "12px", background: "var(--accent)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "14px", fontFamily: "inherit", fontWeight: 500, cursor: loading?"not-allowed":"pointer", opacity: loading?0.7:1 }}>
             {loading ? "Please wait..." : tab==="login" ? "Sign in →" : "Create account →"}
