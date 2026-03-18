@@ -4,27 +4,25 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 export default function CoursesPage() {
-  const [courses, setCourses]   = useState<any[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [filter, setFilter]     = useState<"all"|"enrolled"|"completed">("all");
+  const [courses, setCourses]     = useState<any[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [filter, setFilter]       = useState<"all"|"enrolled"|"completed">("all");
   const [enrolling, setEnrolling] = useState<string|null>(null);
-  const [toast, setToast]       = useState("");
-  const [uid, setUid]           = useState<string|null>(null);
+  const [toast, setToast]         = useState("");
+  const [uid, setUid]             = useState<string|null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(async ({ data }: any) => {
       if (!data?.session) return;
       const userId = data.session.user.id;
       setUid(userId);
-
       const [{ data: allCourses }, { data: enrollments }] = await Promise.all([
         supabase.from("courses").select("*").eq("published", true).order("created_at"),
         supabase.from("enrollments").select("*").eq("user_id", userId),
       ]);
-
-      const enrollMap = new Map(enrollments?.map((e: any) => [e.course_id, e]) ?? []);
-      setCourses((allCourses ?? []).map((c: any) => {
+      const enrollMap = new Map((enrollments as any[])?.map((e: any) => [e.course_id, e]) ?? []);
+      setCourses(((allCourses as any[]) ?? []).map((c: any) => {
         const e = enrollMap.get(c.id) as any;
         return { ...c, enrolled: !!e, progress: e?.progress_pct ?? 0, status: !e ? "new" : e.completed_at ? "done" : "progress" };
       }));
@@ -38,7 +36,7 @@ export default function CoursesPage() {
     if (!uid) return;
     setEnrolling(courseId);
     const supabase = createClient();
-    const { error } = await supabase.from("enrollments").upsert({ user_id: uid, course_id: courseId } as any);const { error } = await supabase.from("enrollments").upsert({ user_id: uid, course_id: courseId });
+    const { error } = await (supabase.from("enrollments") as any).upsert({ user_id: uid, course_id: courseId });
     if (error) { showToast("Failed to enroll: " + error.message); }
     else {
       setCourses((prev) => prev.map((c) => c.id === courseId ? { ...c, enrolled: true, status: "progress", progress: 0 } : c));
@@ -68,7 +66,6 @@ export default function CoursesPage() {
           {toast}
         </div>
       )}
-
       <div className="ph" style={{ padding: "28px 32px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
         <div>
           <h1 style={{ fontSize: "22px", fontWeight: 700, letterSpacing: "-0.5px", color: "var(--text)" }}>Courses</h1>
@@ -78,13 +75,12 @@ export default function CoursesPage() {
         </div>
         <div style={{ display: "flex", gap: "4px", background: "var(--bg3)", borderRadius: "10px", padding: "3px" }}>
           {(["all","enrolled","completed"] as const).map((f) => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: "7px 14px", borderRadius: "8px", fontSize: "12px", fontFamily: "inherit", cursor: "pointer", border: "none", background: filter===f ? "var(--bg2)" : "transparent", color: filter===f ? "var(--text)" : "var(--muted)", fontWeight: filter===f ? 500 : 400, transition: "all 0.15s", textTransform: "capitalize" }}>
+            <button key={f} onClick={() => setFilter(f)} style={{ padding: "7px 14px", borderRadius: "8px", fontSize: "12px", fontFamily: "inherit", cursor: "pointer", border: "none", background: filter===f?"var(--bg2)":"transparent", color: filter===f?"var(--text)":"var(--muted)", fontWeight: filter===f?500:400, transition: "all 0.15s", textTransform: "capitalize" }}>
               {f}
             </button>
           ))}
         </div>
       </div>
-
       <div className="pv" style={{ padding: "24px 32px 0" }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
@@ -122,8 +118,8 @@ export default function CoursesPage() {
                         </Link>
                       </>
                     ) : (
-                      <button onClick={() => handleEnroll(c.id, c.title)} disabled={enrolling === c.id} style={{ width: "100%", padding: "9px", background: "var(--accent)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "13px", fontFamily: "inherit", fontWeight: 500, cursor: enrolling===c.id?"wait":"pointer", opacity: enrolling===c.id?0.7:1 }}>
-                        {enrolling === c.id ? "Enrolling..." : "Enroll Free"}
+                      <button onClick={() => handleEnroll(c.id, c.title)} disabled={enrolling===c.id} style={{ width: "100%", padding: "9px", background: "var(--accent)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "13px", fontFamily: "inherit", fontWeight: 500, cursor: enrolling===c.id?"wait":"pointer", opacity: enrolling===c.id?0.7:1 }}>
+                        {enrolling===c.id ? "Enrolling..." : "Enroll Free"}
                       </button>
                     )}
                   </div>
