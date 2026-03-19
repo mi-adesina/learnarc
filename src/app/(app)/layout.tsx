@@ -49,7 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             }
           } else {
             // Profile missing — create it on the fly
-            supabase.from("profiles").insert({
+            (supabase.from("profiles") as any).insert({
               id: data.session!.user.id,
               name: data.session!.user.email?.split("@")[0] || "User",
               role: "student",
