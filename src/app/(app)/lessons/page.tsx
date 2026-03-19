@@ -74,7 +74,7 @@ export default function LessonsPage() {
     if (lesson.status !== "current" || completing || !uid) return;
     setCompleting(lesson.id);
     const supabase = createClient();
-    await supabase.from("lesson_progress").upsert({ user_id: uid, lesson_id: lesson.id, course_id: selected.id, completed: true, completed_at: new Date().toISOString() });
+    await (supabase.from("lesson_progress") as any).upsert({ user_id: uid, lesson_id: lesson.id, course_id: selected.id, completed: true, completed_at: new Date().toISOString() });
     await supabase.from("activity").insert({ user_id: uid, type: "lesson_complete", title: `Completed "${lesson.title}"`, color: "#34d399" });
     setLessons((prev) => {
       let unlocked = false;
