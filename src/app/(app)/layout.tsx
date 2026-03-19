@@ -40,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         .select("*")
         .eq("id", data.session.user.id)
         .single()
-        .then(({ data: profile, error: profileError }) => {
+        .then(({ data: profile, error: profileError }: any) => {
           console.log("PROFILE:", profile, "ERROR:", profileError);
           if (profile) {
             setUser(profile);
