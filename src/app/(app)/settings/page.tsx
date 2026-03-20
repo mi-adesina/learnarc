@@ -27,7 +27,7 @@ export default function SettingsPage() {
     const supabase = createClient();
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data?.session) return;
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.session.user.id).single();
+      const { data: profile } = await (supabase.from("profiles") as any).select("*").eq("id", data.session.user.id).single();
       if (profile) { setUser(profile); setName(profile.name); }
     });
   }, []);
@@ -36,7 +36,7 @@ export default function SettingsPage() {
     if (!user) return;
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from("profiles").update({ name }).eq("id", user.id);
+    const { error } = await (supabase.from("profiles")as any).update({ name }).eq("id", user.id);
     if (error) showToast(error.message, "error");
     else { setUser((u: any) => ({ ...u, name })); showToast("Profile updated ✓"); }
     setSaving(false);
