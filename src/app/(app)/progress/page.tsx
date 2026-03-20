@@ -10,7 +10,7 @@ export default function ProgressPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(async ({ data }: any) => {
       if (!data?.session) return;
       const uid = data.session.user.id;
 
@@ -20,7 +20,7 @@ export default function ProgressPage() {
         supabase.from("courses").select("*").eq("published", true),
         supabase.from("quiz_attempts").select("*, courses(title)").eq("user_id", uid).order("completed_at", { ascending: false }).limit(8),
         supabase.from("lesson_progress").select("id").eq("user_id", uid).eq("completed", true),
-      ]);
+      ]) as any;
 
       const enrollMap = new Map(enrollments?.map((e: any) => [e.course_id, e]) ?? []);
       const enrolled = (allCourses ?? [])
