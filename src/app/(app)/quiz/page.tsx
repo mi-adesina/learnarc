@@ -87,8 +87,8 @@ export default function QuizPage() {
     const pct = Math.round((finalScore / questions.length) * 100);
     if (uid) {
       const supabase = createClient();
-      await supabase.from("quiz_attempts").insert({ user_id: uid, course_id: selected.id, score: finalScore, total: questions.length, pct, answers: finalAnswers });
-      await supabase.from("activity").insert({ user_id: uid, type: "quiz_complete", title: `Scored ${pct}% on ${selected.title}`, color: "#7c6af7" });
+      await (supabase.from("quiz_attempts") as any).insert({ user_id: uid, course_id: selected.id, score: finalScore, total: questions.length, pct, answers: finalAnswers });
+      await (supabase.from("activity") as any).insert({ user_id: uid, type: "quiz_complete", title: `Scored ${pct}% on ${selected.title}`, color: "#7c6af7" });
     }
     setScore(finalScore);
     setSaving(false);
